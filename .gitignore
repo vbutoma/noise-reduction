@@ -1,2 +1,7 @@
 .idea/
 data/
+results/
+temp/
+test/
+weights/
+*.wav
