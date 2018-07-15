@@ -15,11 +15,11 @@ class NoiseReduction:
         self.acapella = Acapella()
         self.acapella.load_weights(weights)
 
-    def solve_big_file(self, file_path, output_file, use_acapella=True):
+    def solve_big_file(self, file_path, output_file, use_acapella=True, use_harmonic=True):
         # make chunks
         chunks = self._make_chunks(file_path)
         for chunk in chunks:
-            self.solve(chunk)
+            self.solve(chunk, use_acapella=use_acapella, use_harmonic=use_harmonic)
         result_y, sr = self._concat_chunks(chunks)
         librosa.output.write_wav(output_file, result_y, sr)
 
@@ -40,14 +40,15 @@ class NoiseReduction:
         return chunk_names
 
     def _concat_chunks(self, chunk_names):
-        res = []
+        res = np.ndarray((0, ))
         for chunk_name in chunk_names:
             name = '{}_result.wav'.format(chunk_name)
-            y, sr = librosa.load(chunk_name, sr=None)
-            res.extend(y)
+            y, sr = librosa.load(name, sr=None)
+            # res = np.concatenate(res, y)  # todo
+            res = y
         return res, sr
 
-    def solve(self, file_path, use_acapella=True, fft=1536, phase=10):
+    def solve(self, file_path, use_acapella=True, use_harmonic=True, fft=1536, phase=10):
         """
         1: preprocess audio: mb smooth ??
         2. acapella model
@@ -62,12 +63,13 @@ class NoiseReduction:
         RESULT= '{}_result.wav'.format(file_path)
         # =========================
         start_time = time.time()
-        audio, sr = self.load_and_preprocess(file_path, smooth=False)
+        audio, sr = self.load_and_preprocess(file_path, smooth=False, harmonic=use_harmonic)
         librosa.output.write_wav(PREPROCESSED, audio, sr, norm=True)
         if use_acapella:
             audio = self.isolate_vocal(PREPROCESSED, fft, phase)
         else:
-            audio = self.isolate_vso(PREPROCESSED)
+            # audio = self.isolate_vso(PREPROCESSED)
+            pass
         # save temp file
         self._save_temp(audio, sr, ISOLATED)
         self.noise_reduction(ISOLATED, N_REDUCTIONED, delta=0.05)
@@ -80,12 +82,14 @@ class NoiseReduction:
         print('Save temp to:', name)
         librosa.output.write_wav(name, x, sr, norm=True)
 
-    def load_and_preprocess(self, file_path, smooth=False):
+    def load_and_preprocess(self, file_path, smooth=False, harmonic=True):
         audio, sr = librosa.load(file_path, sr=None)
         if smooth:
             audio = self._smooth(audio, window_len=5, window='flat')
-        y_harmonic, y_percussive = librosa.effects.hpss(audio)
-        return y_harmonic, sr
+        if harmonic:
+            y_harmonic, y_percussive = librosa.effects.hpss(audio)
+            audio = y_harmonic
+        return audio, sr
 
     def post_process(self, inp, out, smooth=False):
         wav, sr = librosa.load(inp, sr=None)
@@ -93,7 +97,7 @@ class NoiseReduction:
         # if smooth:
         #     wav = self._smooth(wav, window_len=7, window='hamming')
         librosa.output.write_wav('harmonic.wav', y_harmonic, sr, norm=True)
-        librosa.output.write_wav(out, y_harmonic, sr, norm=True)
+        librosa.output.write_wav(out, wav, sr, norm=True)
         librosa.output.write_wav('percussive.wav', y_percussive, sr, norm=True)
 
     def _smooth(self, x, window_len=11, window='hanning'):
@@ -148,4 +152,5 @@ class NoiseReduction:
 if __name__ == "__main__":
     v = NoiseReduction()
     # v.solve(file_path='test/2/1.wav', use_acapella=True)
-    v.solve_big_file(file_path='test/3/1.wav', output_file='test/3/FUll_RESULT.wav', use_acapella=True)
+    v.solve_big_file(file_path='test/7/1.wav', output_file='test/7/FUll_RESULT.wav',
+                     use_harmonic=True, use_acapella=True)

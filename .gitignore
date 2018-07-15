@@ -1,7 +1,13 @@
 .idea/
 data/
 results/
+cutted/
 temp/
 test/
 weights/
+
+
 *.wav
+*.zip
+*.prof
+

@@ -6,9 +6,12 @@ import os
 import numpy as np
 import sox
 
+from noise_reduction import NoiseReduction
+
 
 HIGH_NOISE_DATA = './data/background_noise_high'
 LOW_NOISE_DATA = './data/background_noise_low'
+OVERLAPPED = './data/music_overlapping'
 
 
 def save_file(wav, sr):
@@ -81,21 +84,42 @@ def solve(file_name):
     librosa.output.write_wav(post_processed, smoothed, sr, norm=False)
 
 
-def cut_audio(file_path, delta=1000000, left_shift=300000, right_shift=500000):
+def cut_audio(file_path, output='cutted.wav', delta=1000000, left_shift=300000, right_shift=500000):
     w, s = librosa.load(file_path)
     print(len(w))
     librosa.output.write_wav(
-        'cutted.wav',
+        output,
         w[delta + left_shift: delta + right_shift],
         s
     )
+
+
+def pipeline(folder=HIGH_NOISE_DATA):
+    v = NoiseReduction()
+    files = os.listdir(folder)
+    new_folder = os.path.join('cutted')
+    if not os.path.exists(new_folder):
+        os.makedirs(new_folder)
+        for i, file in enumerate(files):
+            file_path = os.path.join(folder, file)
+            out_f = os.path.join(new_folder, str(i))
+            if not os.path.exists(out_f):
+                os.makedirs(out_f)
+            output_file = "{}/cutted.wav".format(out_f)
+            cut_audio(file_path, output=output_file, delta=1000000)
+    folders = os.listdir(new_folder)
+    for f in folders:
+        print('SOLVING:', f)
+        inp = "{}/{}".format(os.path.join(new_folder, f), 'cutted.wav')
+        out = "{}/FULL_RES.wav".format(os.path.join(new_folder, f))
+        v.solve_big_file(file_path=inp, output_file=out, use_acapella=True, use_harmonic=False)
 
 
 if __name__ == "__main__":
     name = 'Sample_1_Female.wav'
     # clear_folder(LOW_NOISE_DATA)
     file_path = os.path.join(LOW_NOISE_DATA, name)
-    file_path = 'music_over_2.wav'
+    file_path = '7.wav'
     # solve(file_path)
-    cut_audio(file_path, delta=0)
-
+    # cut_audio(file_path, delta=0)
+    pipeline(OVERLAPPED)
