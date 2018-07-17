@@ -31,7 +31,7 @@ import librosa.display
 
 #############################################
 # Load an example with vocals.
-y, sr = librosa.load('test/2/1.wav')
+y, sr = librosa.load('test/4/1.wav')
 
 
 # And compute the spectrogram magnitude and phase
@@ -101,7 +101,7 @@ S_background = mask_i * S_full
 # Plot the same slice, but separated into its foreground and background
 
 # sphinx_gallery_thumbnail_number = 2
-
+#
 # plt.figure(figsize=(12, 8))
 # plt.subplot(3, 1, 1)
 # librosa.display.specshow(librosa.amplitude_to_db(S_full[:, idx], ref=np.max),
@@ -122,5 +122,17 @@ S_background = mask_i * S_full
 # plt.tight_layout()
 # plt.show()
 
-librosa.output.write_wav('full.wav', S_full, sr)
-librosa.output.write_wav('front.wav', S_foreground, sr)
+def magnitude_to_audio(amplitude, phase, sample_rate=22050):
+    stftMatrix = amplitude + phase * 1j
+    audio = librosa.istft(stftMatrix)
+    return audio
+
+
+audio_full = magnitude_to_audio(S_full, phase, sr)
+audio_fg = magnitude_to_audio(S_background, phase, sr)
+n = min(len(y), len(audio_fg))
+y = y[:n] - audio_fg[:n]
+
+librosa.output.write_wav('full.wav', audio_full, sr)
+librosa.output.write_wav('back.wav', audio_fg, sr)
+librosa.output.write_wav('front.wav', y, sr)

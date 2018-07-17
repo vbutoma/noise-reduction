@@ -55,6 +55,7 @@ class NoiseReduction:
         3. noise reduction
         4. smoothing
         5. todo: increase the timbre
+        6. todo: reduce the echo
         """
         # init const names
         ISOLATED = '{}_isolated.wav'.format(file_path)
