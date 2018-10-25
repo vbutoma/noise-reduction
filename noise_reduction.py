@@ -27,6 +27,7 @@ class NoiseReduction:
         max_chunk_size = 2 * 10**5
         y, sr = librosa.load(file_name, sr=None)
         n = len(y)
+        max_chunk_size = n  # :))))
         i_count = n // max_chunk_size + (1 if (n % max_chunk_size) else 0)
         print('Len of audio: {}. Chunk size: {}. Chunks count: {}'.format(n, max_chunk_size, i_count))
         chunk_names = []

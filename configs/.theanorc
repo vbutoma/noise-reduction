@@ -1,0 +1,5 @@
+[global]
+openmp=True
+
+[blas]
+ldflags = -llapack -lblas

@@ -121,5 +121,5 @@ if __name__ == "__main__":
     file_path = os.path.join(LOW_NOISE_DATA, name)
     file_path = '7.wav'
     # solve(file_path)
-    # cut_audio(file_path, delta=0)
-    pipeline(OVERLAPPED)
+    cut_audio(file_path, delta=0)
+    # pipeline(OVERLAPPED)

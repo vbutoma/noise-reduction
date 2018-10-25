@@ -4,8 +4,8 @@ results/
 cutted/
 temp/
 test/
-weights/
-
+#weights/
+__pycache__/
 
 *.wav
 *.zip

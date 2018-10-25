@@ -120,7 +120,7 @@ class Acapella:
         conversion.save_audio(new_audio, output_filename_base + ".wav", sample_rate)
         conversion.save_spectrogram(new_spectrogram, output_filename_base + ".png")
         conversion.save_spectrogram(spectrogram, os.path.join(path_parts[0], filename_parts[0]) + ".png")
-        console.log("Vocal isolation complete 👌")
+        # console.log("Vocal isolation complete 👌")
         print('execution time: {}'.format(time.time() - start_time))
         return new_audio
 
